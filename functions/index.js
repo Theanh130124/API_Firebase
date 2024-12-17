@@ -63,3 +63,35 @@ app.post("/categories", async (req , res) => {
         return res.status(500).send(error.message)
     }
 })
+app.patch("/categories/:cateId" ,  async (req , res) => {
+ const {cateId} = req.params;
+ const {name} =  req.body;
+ try{
+    const cate = await db.collection("category").doc(cateId)
+    const current = (await cate.get()).data(); //lấy list dữ liệu để cập nhật
+    const data = {
+        ...current, "name":name                 //gọi ra các đối tượng hiện có và chỉ update trường name -> nếu không có ...cate.data() các trường khác đều bị ghi đè lại 
+    }
+    await cate.set(data).catch(err => {
+        return res.status(400); // thường là lỗi cateId:
+    })
+    return res.status(200).send({
+        "message":'succesful',
+        "data":data ,
+    })
+ }catch(error){
+    return res.status(500).send(error.message)
+ }
+});
+app.delete("/categories/:cateId", async(req,res) => {
+    const {cateId} = req.params
+    try{
+        const cate = db.collection("categories").doc(cateId);
+        await cate.delete().catch(err => res.status(400) )
+        return res.status(204).send();
+    }
+    catch(error){
+        return res.status(500).send(error.message)
+    }
+
+});
